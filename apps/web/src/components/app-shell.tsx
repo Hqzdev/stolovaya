@@ -5,6 +5,7 @@ import { BookOpen, LogOut, Utensils } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useApplication, useAuth } from "./auth-provider";
 import { ErrorNotice } from "./ui";
+import { useBlockMotion } from "@/lib/use-block-motion";
 
 export function Brand() {
   return (
@@ -21,6 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useApplication();
   const { logout } = useAuth();
   const pathname = usePathname();
+  const motionRoot = useBlockMotion();
   const [error, setError] = useState("");
   const home = user.role === "admin" ? "/admin" : "/cook";
   const nav =
@@ -36,14 +38,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   )
     return null;
   return (
-    <div className="flex min-h-screen flex-col">
+    <div ref={motionRoot} className="flex min-h-screen flex-col">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4"
       >
         К содержимому
       </a>
-      <header className="flex h-[76px] shrink-0 items-center gap-6 border-b border-line px-6 xl:px-8">
+      <header className="motion-block flex h-[76px] shrink-0 items-center gap-6 border-b border-line px-6 xl:px-8">
         <Link href={home} aria-label="Столовая — главная">
           <Brand />
         </Link>
@@ -58,7 +60,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex h-full items-center border-b-2 text-[13px] ${pathname === item.href ? "border-blue text-blue" : "border-transparent text-muted hover:text-ink"}`}
+              aria-current={pathname === item.href ? "page" : undefined}
+              className={`motion-nav-link relative flex h-full items-center border-b-2 border-transparent text-[13px] transition-colors ${pathname === item.href ? "text-blue" : "text-muted hover:text-ink"}`}
             >
               {item.label}
             </Link>
@@ -72,7 +75,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button
             aria-label="Выйти"
             title="Выйти"
-            className="ml-2 rounded-lg p-2 text-muted hover:bg-neutral hover:text-ink"
+            className="motion-control ml-2 rounded-lg p-2 text-muted hover:bg-neutral hover:text-ink"
             onClick={() => {
               void logout().catch((error) => setError(error.message));
             }}
@@ -82,13 +85,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main
+        key={pathname}
         id="main"
         className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 px-6 py-9 lg:px-10 xl:px-16"
       >
         {error && <ErrorNotice message={error} />}
         {children}
       </main>
-      <footer className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-4 px-6 pb-6 text-[11px] text-muted lg:px-10 xl:px-16">
+      <footer className="motion-block mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-4 px-6 pb-6 text-[11px] text-muted lg:px-10 xl:px-16">
         <span>Столовая · Учёт школьного питания</span>
         <div className="flex gap-5">
           <Link

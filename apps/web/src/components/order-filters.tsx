@@ -41,7 +41,7 @@ export function OrderFilters({
               onClick={() => update("status", status)}
               key={status}
               aria-pressed={(params.get("status") || "all") === status}
-              className={`border-b-2 py-2 text-[13px] ${(params.get("status") || "all") === status ? "border-blue text-blue" : "border-transparent text-muted hover:text-ink"}`}
+              className={`motion-control border-b-2 py-2 text-[13px] ${(params.get("status") || "all") === status ? "border-blue text-blue" : "border-transparent text-muted hover:text-ink"}`}
             >
               {
                 {

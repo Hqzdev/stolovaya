@@ -77,14 +77,15 @@ export default function CookOrders() {
       {success && (
         <div
           role="status"
-          className="flex items-center gap-2 rounded-lg bg-blue-tint px-4 py-3 text-sm text-blue"
+          key={success}
+          className="motion-block flex items-center gap-2 rounded-lg bg-blue-tint px-4 py-3 text-sm text-blue"
         >
           <Check size={16} />
           {success}
         </div>
       )}
       {totals && (
-        <div className="grid overflow-hidden rounded-xl border border-line bg-white sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr_1fr]">
+        <div className="motion-block grid overflow-hidden rounded-xl border border-line bg-white sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr_1fr]">
           {[
             {
               label: "порции выдано",
@@ -109,14 +110,15 @@ export default function CookOrders() {
             },
           ].map((metric) => (
             <div
-              className={`flex min-h-[135px] flex-col justify-center gap-2 px-6 py-5 ${metric.primary ? "bg-warm" : ""}`}
+              className={`motion-item flex min-h-[135px] flex-col justify-center gap-2 px-6 py-5 ${metric.primary ? "bg-warm" : ""}`}
               key={metric.label}
             >
               {!metric.primary && (
                 <p className="text-xs text-muted">{metric.label}</p>
               )}
               <span
-                className={`font-semibold leading-none tracking-[-1px] tabular-nums ${metric.primary ? "text-[46px]" : "text-[30px]"}`}
+                key={metric.value}
+                className={`motion-item font-semibold leading-none tracking-[-1px] tabular-nums ${metric.primary ? "text-[46px]" : "text-[30px]"}`}
               >
                 {number(metric.value)}
               </span>
@@ -166,7 +168,7 @@ export default function CookOrders() {
               />
               <CookGroups catalog={catalog} today={today} revision={success} />
             </Panel>
-            <section className="rounded-xl border border-line p-6">
+            <section className="motion-block motion-surface rounded-xl border border-line p-6">
               <Info size={17} className="mb-3 text-blue" />
               <h2 className="mb-2 text-sm font-semibold">
                 Готово — значит учтено

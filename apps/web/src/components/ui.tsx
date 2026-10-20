@@ -32,7 +32,7 @@ export function Button({
     <button
       {...props}
       disabled={props.disabled || busy}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${secondary ? "border-line bg-white text-ink hover:bg-neutral" : "border-transparent bg-blue text-white hover:bg-blue/90"} ${className}`}
+      className={`motion-control inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-50 ${secondary ? "border-line bg-white text-ink hover:bg-neutral" : "border-transparent bg-blue text-white hover:bg-blue/90"} ${className}`}
     >
       {busy && <LoaderCircle size={15} className="animate-spin" />}
       {children}
@@ -51,7 +51,7 @@ export function ButtonLink({
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[13px] font-medium transition ${secondary ? "border-line bg-white hover:bg-neutral" : "border-transparent bg-blue text-white hover:bg-blue/90"}`}
+      className={`motion-control inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[13px] font-medium ${secondary ? "border-line bg-white hover:bg-neutral" : "border-transparent bg-blue text-white hover:bg-blue/90"}`}
     >
       {children}
     </Link>
@@ -79,7 +79,7 @@ export function Field({
   hint?: string;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-2">
+    <div className="motion-field flex min-w-0 flex-col gap-2">
       <label htmlFor={htmlFor} className="text-[13px] font-medium">
         {label}
       </label>
@@ -98,7 +98,8 @@ export function Status({ status }: { status: OrderStatus }) {
     status === "ready" ? Check : status === "cooking" ? Clock3 : Circle;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${status === "ready" ? "bg-blue-tint text-blue" : status === "cooking" ? "bg-warm text-warm-ink" : "bg-neutral text-muted"}`}
+      key={status}
+      className={`motion-status inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${status === "ready" ? "bg-blue-tint text-blue" : status === "cooking" ? "bg-warm text-warm-ink" : "bg-neutral text-muted"}`}
     >
       <Icon size={12} />
       {statusNames[status]}
@@ -114,7 +115,7 @@ export function Panel({
 }) {
   return (
     <section
-      className={`min-w-0 overflow-hidden rounded-xl border border-line bg-white ${className}`}
+      className={`motion-block motion-surface min-w-0 overflow-hidden rounded-xl border border-line bg-white ${className}`}
     >
       {children}
     </section>
@@ -151,7 +152,7 @@ export function Heading({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-5">
+    <div className="motion-block flex flex-wrap items-center justify-between gap-5">
       <div>
         <h1 className="text-[32px] leading-tight font-semibold tracking-[-1px] lg:text-4xl">
           {title}
@@ -172,7 +173,7 @@ export function Back({
   return (
     <Link
       href={href}
-      className="inline-flex w-fit items-center gap-2 text-[13px] text-muted hover:text-blue"
+      className="motion-block motion-back inline-flex w-fit items-center gap-2 text-[13px] text-muted hover:text-blue"
     >
       <ArrowLeft size={15} />
       {children}
@@ -189,7 +190,7 @@ export function Empty({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
+    <div className="motion-block flex flex-col items-center gap-3 px-6 py-16 text-center">
       <div className="mb-2 grid size-12 place-items-center rounded-xl bg-paper text-muted">
         <Circle size={24} strokeWidth={1.5} />
       </div>
@@ -203,7 +204,7 @@ export function Loading() {
   return (
     <div
       role="status"
-      className="flex min-h-64 items-center justify-center gap-3 text-sm text-muted"
+      className="motion-item flex min-h-64 items-center justify-center gap-3 text-sm text-muted"
     >
       <LoaderCircle size={18} className="animate-spin" />
       Загружаем данные…
@@ -219,8 +220,9 @@ export function ErrorNotice({
 }) {
   return (
     <div
+      key={message}
       role="alert"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#eed9d3] bg-[#fff5f1] px-4 py-3 text-sm text-[#9b3527]"
+      className="motion-block flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#eed9d3] bg-[#fff5f1] px-4 py-3 text-sm text-[#9b3527]"
     >
       <span>{message}</span>
       {retry && (
@@ -237,7 +239,7 @@ export function ErrorNotice({
 }
 export function RuleNote() {
   return (
-    <p className="flex items-center gap-2 text-xs leading-5 text-muted">
+    <p className="motion-block flex items-center gap-2 text-xs leading-5 text-muted">
       <Check size={14} className="shrink-0" />В выдачу входят порции заказов со
       статусом «Готово».
     </p>

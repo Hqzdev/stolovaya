@@ -76,7 +76,7 @@ export default function AdminOverview() {
                     <Link
                       key={order.id}
                       href={linkTo(`/admin/orders/${order.id}`, query)}
-                      className="block border-b border-line py-3 first:pt-0 last:border-0 hover:text-blue"
+                      className="motion-item block border-b border-line py-3 first:pt-0 last:border-0 hover:text-blue"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-[13px] font-medium leading-5">

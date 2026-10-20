@@ -25,6 +25,7 @@ const colors = [
 export default function ComponentsPage() {
   const [notice, setNotice] = useState("");
   const [quantity, setQuantity] = useState("32");
+  const [motionPreview, setMotionPreview] = useState(0);
   const valid =
     Number.isInteger(Number(quantity)) &&
     Number(quantity) > 0 &&
@@ -50,7 +51,7 @@ export default function ComponentsPage() {
           />
           <div className="grid grid-cols-3 gap-5 p-6 pt-0">
             {colors.map(([name, code, color]) => (
-              <div key={name}>
+              <div key={name} className="motion-item">
                 <div
                   className={`mb-3 h-16 rounded-lg border border-line ${color}`}
                 />
@@ -150,6 +151,38 @@ export default function ComponentsPage() {
               </p>
             )}
           </div>
+        </Panel>
+        <Panel>
+          <PanelHead
+            title="Анимация блоков"
+            description="Мягкое появление по очереди и короткий отклик на действие."
+          >
+            <Button
+              secondary
+              onClick={() => setMotionPreview((value) => value + 1)}
+            >
+              Повторить
+            </Button>
+          </PanelHead>
+          <div key={motionPreview} className="grid grid-cols-3 gap-3 px-6 pb-5">
+            {[
+              ["Блок", "bg-paper"],
+              ["Акцент", "bg-warm"],
+              ["Действие", "bg-blue-tint"],
+            ].map(([label, color], index) => (
+              <div
+                key={label}
+                data-motion-step={index}
+                className={`motion-block motion-card flex h-24 items-center justify-center rounded-lg text-sm font-medium ${color}`}
+              >
+                {label}
+              </div>
+            ))}
+          </div>
+          <p className="px-6 pb-6 text-xs leading-6 text-muted">
+            Появление — 460 мс, наведение — 180 мс. При настройке уменьшенного
+            движения анимации отключаются.
+          </p>
         </Panel>
         <Panel>
           <PanelHead title="Обратная связь" />

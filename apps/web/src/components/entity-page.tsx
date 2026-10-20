@@ -123,7 +123,7 @@ export function EntityPage({ kind }: { kind: "dish" | "group" }) {
                   </div>
                 </dl>
               </Panel>
-              <section className="rounded-xl bg-blue-tint p-6">
+              <section className="motion-block motion-surface rounded-xl bg-blue-tint p-6">
                 <h2 className="mb-3 text-base font-semibold">
                   Как считаются порции
                 </h2>

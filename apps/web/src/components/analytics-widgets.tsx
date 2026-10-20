@@ -30,7 +30,7 @@ export function PeriodControls() {
             key={value}
             onClick={() => update({ period: value })}
             aria-pressed={period === value}
-            className={`rounded-md px-4 py-2 text-[13px] font-medium ${period === value ? "bg-white text-ink" : "text-muted hover:text-ink"}`}
+            className={`motion-control rounded-md px-4 py-2 text-[13px] font-medium ${period === value ? "bg-white text-ink" : "text-muted hover:text-ink"}`}
           >
             {label}
           </button>
@@ -87,7 +87,7 @@ export function Metrics({
     },
   ];
   return (
-    <div className="grid overflow-hidden rounded-xl border border-line bg-white sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr_1fr]">
+    <div className="motion-block grid overflow-hidden rounded-xl border border-line bg-white sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr_1fr]">
       {metrics.map((metric) => (
         <Link
           key={metric.label}
@@ -95,7 +95,7 @@ export function Metrics({
             ...entity,
             status: metric.filter,
           })}
-          className={`group relative flex min-h-[135px] flex-col justify-center gap-2 px-6 py-5 transition ${metric.primary ? "bg-warm hover:bg-[#ffe9b5]" : "hover:bg-paper"}`}
+          className={`motion-item motion-card group relative flex min-h-[135px] flex-col justify-center gap-2 px-6 py-5 ${metric.primary ? "bg-warm hover:bg-[#ffe9b5]" : "hover:bg-paper"}`}
         >
           <ArrowUpRight
             size={16}
@@ -107,7 +107,8 @@ export function Metrics({
             {metric.label}
           </span>
           <span
-            className={`font-semibold tracking-[-1px] tabular-nums ${metric.primary ? "text-[46px] leading-none" : "text-[30px] leading-tight"}`}
+            key={metric.value}
+            className={`motion-item font-semibold tracking-[-1px] tabular-nums ${metric.primary ? "text-[46px] leading-none" : "text-[30px] leading-tight"}`}
           >
             {typeof metric.value === "number"
               ? number(metric.value)
@@ -150,6 +151,7 @@ export function IssuedChart({
       </PanelHead>
       <div className="px-6 pb-4">
         <svg
+          key={`${analytics.scope.date}:${analytics.scope.period}`}
           viewBox="0 0 700 170"
           className="h-[170px] w-full"
           role="img"
@@ -179,9 +181,11 @@ export function IssuedChart({
                   width={unit - 8}
                   height="167"
                   rx="5"
-                  className="fill-transparent group-hover:fill-blue-tint"
+                  className="motion-chart-hit fill-transparent group-hover:fill-blue-tint"
                 />
                 <text
+                  className="motion-chart-label"
+                  data-motion-step={Math.min(index, 5)}
                   x={index * unit + unit / 2}
                   y={128 - height}
                   textAnchor="middle"
@@ -191,6 +195,8 @@ export function IssuedChart({
                   {point.issued}
                 </text>
                 <rect
+                  className="motion-chart-bar"
+                  data-motion-step={Math.min(index, 5)}
                   x={index * unit + unit * 0.22}
                   y={138 - height}
                   width={unit * 0.56}
@@ -239,7 +245,7 @@ export function DishBreakdown({
             <Link
               href={linkTo(`/admin/dishes/${row.id}`, query)}
               key={row.id}
-              className="group"
+              className="motion-item group"
             >
               <div className="mb-2 flex justify-between gap-3 text-[13px]">
                 <span className="font-medium group-hover:text-blue">
@@ -257,6 +263,7 @@ export function DishBreakdown({
               >
                 <rect width="400" height="5" rx="2.5" fill="#efeeec" />
                 <rect
+                  className="motion-progress"
                   width={row.planned ? (row.issued / row.planned) * 400 : 0}
                   height="5"
                   rx="2.5"
@@ -300,7 +307,7 @@ export function BreakdownTable({
           {rows.map((row) => (
             <tr
               key={row.id}
-              className="h-[55px] border-b border-line last:border-0 hover:bg-blue-tint/40"
+              className="motion-row h-[55px] border-b border-line last:border-0 hover:bg-blue-tint/40"
             >
               <td className="px-6">
                 <Link
@@ -324,6 +331,7 @@ export function BreakdownTable({
                   <svg viewBox="0 0 100 5" className="h-[5px] w-20" aria-hidden>
                     <rect width="100" height="5" rx="2.5" fill="#efeeec" />
                     <rect
+                      className="motion-progress"
                       width={row.planned ? (row.issued / row.planned) * 100 : 0}
                       height="5"
                       rx="2.5"
@@ -384,7 +392,10 @@ export function PanelLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link href={href} className="flex items-center gap-1.5 text-xs text-blue">
+    <Link
+      href={href}
+      className="motion-link flex items-center gap-1.5 text-xs text-blue"
+    >
       {children}
       <Arrow />
     </Link>

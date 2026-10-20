@@ -4,9 +4,11 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { Brand } from "@/components/app-shell";
 import { Button, ErrorNotice, Field, Input } from "@/components/ui";
+import { useBlockMotion } from "@/lib/use-block-motion";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const motionRoot = useBlockMotion();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [visible, setVisible] = useState(false);
@@ -27,14 +29,14 @@ export default function LoginPage() {
     }
   }
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex h-[76px] items-center justify-between border-b border-line px-8">
+    <div ref={motionRoot} className="flex min-h-screen flex-col">
+      <header className="motion-block flex h-[76px] items-center justify-between border-b border-line px-8">
         <Brand />
         <span className="text-xs text-muted">Вход в систему</span>
       </header>
       <main className="flex flex-1 items-center justify-center px-5 py-16">
         <div className="w-full max-w-[440px]">
-          <div className="mb-8">
+          <div className="motion-block mb-8">
             <h1 className="text-[36px] font-semibold tracking-[-1.2px]">
               Вход в Столовую
             </h1>
@@ -45,7 +47,7 @@ export default function LoginPage() {
           </div>
           <form
             onSubmit={submit}
-            className="flex flex-col gap-6 rounded-xl border border-line bg-white p-8"
+            className="motion-block motion-surface flex flex-col gap-6 rounded-xl border border-line bg-white p-8"
           >
             {error && <ErrorNotice message={error} />}
             <Field htmlFor="login" label="Логин">
@@ -73,7 +75,7 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
-                  className="absolute top-0 right-0 grid h-11 w-11 place-items-center rounded-lg text-muted hover:text-ink"
+                  className="motion-control absolute top-0 right-0 grid h-11 w-11 place-items-center rounded-lg text-muted hover:text-ink"
                   aria-label={visible ? "Скрыть пароль" : "Показать пароль"}
                   onClick={() => setVisible(!visible)}
                 >
@@ -88,12 +90,12 @@ export default function LoginPage() {
               После входа откроется рабочее место вашей роли.
             </p>
           </form>
-          <p className="mt-5 text-center text-xs text-muted">
+          <p className="motion-block mt-5 text-center text-xs text-muted">
             Используйте учётную запись вашей столовой.
           </p>
         </div>
       </main>
-      <footer className="flex justify-between gap-4 px-8 pb-6 text-xs text-muted">
+      <footer className="motion-block flex justify-between gap-4 px-8 pb-6 text-xs text-muted">
         <span>Столовая · Учёт школьного питания</span>
         <span>Для сотрудников</span>
       </footer>

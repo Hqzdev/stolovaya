@@ -54,7 +54,7 @@ export function OrderTable({
           {orders.map((order) => (
             <tr
               key={order.id}
-              className="h-[58px] border-b border-line last:border-0 hover:bg-blue-tint/30"
+              className="motion-row h-[58px] border-b border-line last:border-0 hover:bg-blue-tint/30"
             >
               <td className="px-6 py-2">
                 <Link
@@ -158,7 +158,7 @@ export function Pagination({
               <Link
                 href={linkTo(path, query, { page: value })}
                 aria-current={page.page === value ? "page" : undefined}
-                className={`grid size-8 place-items-center rounded-md ${page.page === value ? "bg-blue-tint text-blue" : "hover:bg-neutral"}`}
+                className={`motion-control grid size-8 place-items-center rounded-md ${page.page === value ? "bg-blue-tint text-blue" : "hover:bg-neutral"}`}
               >
                 {value}
               </Link>

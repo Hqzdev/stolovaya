@@ -105,7 +105,7 @@ export function OrderDetailPage() {
                     return (
                       <li
                         key={step.status}
-                        className="relative flex gap-4 pb-7 last:pb-0"
+                        className="motion-item relative flex gap-4 pb-7 last:pb-0"
                       >
                         {index < 2 && (
                           <span className="absolute top-8 bottom-0 left-4 w-px bg-line" />
@@ -169,7 +169,7 @@ export function OrderDetailPage() {
               )}
             </div>
             <aside className="flex flex-col gap-6">
-              <section className="rounded-xl bg-warm p-6">
+              <section className="motion-block motion-surface rounded-xl bg-warm p-6">
                 <p className="text-xs text-warm-ink">Учтено в выдаче</p>
                 <div className="my-3 text-[56px] leading-none font-semibold tracking-[-1.5px] tabular-nums">
                   {order.status === "ready" ? number(order.quantity) : 0}

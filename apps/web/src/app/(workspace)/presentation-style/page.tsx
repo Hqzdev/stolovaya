@@ -158,14 +158,14 @@ export default function PresentationStylePage() {
             Добавить блюдо, выбрать класс и отметить готовность.
           </p>
         </Panel>
-        <section className="rounded-xl bg-warm p-7">
+        <section className="motion-block motion-surface rounded-xl bg-warm p-7">
           <p className="mb-6 text-xs text-warm-ink">АКЦЕНТНЫЙ БЛОК</p>
           <h2 className="text-[28px] font-semibold">Всё учтено</h2>
           <p className="mt-4 text-base leading-7 text-warm-ink">
             Готовые заказы автоматически входят в выдачу.
           </p>
         </section>
-        <section className="rounded-xl bg-blue-tint p-7">
+        <section className="motion-block motion-surface rounded-xl bg-blue-tint p-7">
           <p className="mb-6 text-xs text-blue">ПОЯСНЕНИЕ</p>
           <h2 className="text-[28px] font-semibold">Прозрачные числа</h2>
           <p className="mt-4 text-base leading-7">

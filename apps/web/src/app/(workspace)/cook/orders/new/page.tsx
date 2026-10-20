@@ -82,7 +82,10 @@ export default function NewOrderPage() {
       {loading && <Loading />}
       {error && <ErrorNotice message={error} retry={refresh} />}
       {created && (
-        <section role="status" className="rounded-xl bg-blue-tint p-6">
+        <section
+          role="status"
+          className="motion-block rounded-xl bg-blue-tint p-6"
+        >
           <h2 className="mb-2 font-semibold">
             Заказ #{created.order.id} сохранён
           </h2>
@@ -199,7 +202,7 @@ export default function NewOrderPage() {
             </form>
           </Panel>
           <aside className="flex flex-col gap-6">
-            <section className="rounded-xl bg-warm p-6">
+            <section className="motion-block motion-surface rounded-xl bg-warm p-6">
               <p className="mb-4 text-[10px] font-medium tracking-[1px] text-warm-ink">
                 НОВЫЙ ЗАКАЗ
               </p>
@@ -227,7 +230,7 @@ export default function NewOrderPage() {
                 ))}
               </dl>
             </section>
-            <section className="rounded-xl border border-line p-6">
+            <section className="motion-block motion-surface rounded-xl border border-line p-6">
               <Check size={18} className="mb-3 text-blue" />
               <h2 className="mb-2 text-sm font-semibold">
                 В статистику после готовности
