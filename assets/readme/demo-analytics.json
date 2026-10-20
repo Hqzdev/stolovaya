@@ -1,0 +1,57 @@
+{
+  "scope": {
+    "date": "2026-10-20",
+    "period": "week",
+    "from": "2026-10-14",
+    "to": "2026-10-20",
+    "timezone": "Asia/Yekaterinburg"
+  },
+  "totals": {
+    "planned": 1164,
+    "issued": 994,
+    "orders": 44,
+    "ready": 35,
+    "cooking": 5,
+    "fresh": 4,
+    "cookingPortions": 86,
+    "newPortions": 84
+  },
+  "chart": [
+    {
+      "key": "2026-10-14",
+      "label": "14 окт.",
+      "issued": 186
+    },
+    {
+      "key": "2026-10-15",
+      "label": "15 окт.",
+      "issued": 212
+    },
+    {
+      "key": "2026-10-16",
+      "label": "16 окт.",
+      "issued": 198
+    },
+    {
+      "key": "2026-10-17",
+      "label": "17 окт.",
+      "issued": 224
+    },
+    {
+      "key": "2026-10-18",
+      "label": "18 окт.",
+      "issued": 0
+    },
+    {
+      "key": "2026-10-19",
+      "label": "19 окт.",
+      "issued": 0
+    },
+    {
+      "key": "2026-10-20",
+      "label": "20 окт.",
+      "issued": 174
+    }
+  ],
+  "source": "GET /api/v1/analytics?period=week — демонстрационная PostgreSQL"
+}

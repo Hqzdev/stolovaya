@@ -1,0 +1,56 @@
+@import "@fontsource-variable/inter";
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f6f5f4;
+  --color-white: #ffffff;
+  --color-ink: #111111;
+  --color-muted: #757575;
+  --color-line: #00000014;
+  --color-blue: #0075de;
+  --color-blue-tint: #e6f3fe;
+  --color-yellow: #ffb110;
+  --color-warm: #fff1ce;
+  --color-warm-ink: #826018;
+  --color-neutral: #efeeec;
+  --font-sans:
+    "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+@layer base {
+  body {
+    @apply m-0 bg-paper font-sans text-ink antialiased;
+  }
+  button,
+  a,
+  input,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:not(:disabled),
+  select {
+    cursor: pointer;
+  }
+  a,
+  button,
+  input,
+  select {
+    @apply focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue;
+  }
+  input,
+  select {
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    @apply bg-blue-tint text-ink;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

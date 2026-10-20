@@ -1,0 +1,14 @@
+node_modules
+**/.next
+**/dist
+.git
+.env
+.env.*
+.local
+*.pen
+design-preview
+admin-prototype
+docs/screenshots
+assets/readme
+*.log
+**/*.tsbuildinfo

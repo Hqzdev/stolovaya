@@ -1,0 +1,44 @@
+{
+  "name": "stolovaya",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "npm run build -w @stolovaya/api && concurrently -k -n api,web \"npm run dev -w @stolovaya/api\" \"npm run dev -w @stolovaya/web\"",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint apps packages scripts",
+    "db:migrate": "npm run db:migrate -w @stolovaya/api",
+    "db:catalog": "npm run db:catalog -w @stolovaya/api",
+    "db:demo": "npm run db:demo -w @stolovaya/api",
+    "verify": "node scripts/verify.mjs",
+    "verify:browser": "node scripts/browser-verify.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "readme:assets": "node scripts/readme-assets.mjs",
+    "format": "prettier --write apps packages scripts docs *.md *.json *.mjs *.yaml .github",
+    "verify:credentials": "npm run build -w @stolovaya/api && node scripts/verify-credentials.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "playwright": "^1.64.1",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.0"
+  }
+}
