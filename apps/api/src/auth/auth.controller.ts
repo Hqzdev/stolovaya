@@ -18,6 +18,7 @@ import { IsString, MaxLength, MinLength } from "class-validator";
 import type { Response } from "express";
 import { AuthService } from "./auth.service";
 import { Public, SessionRequest } from "./access.guard";
+import { WorkspaceService } from "../workspace/workspace.service";
 import { Environment } from "../config/environment";
 
 class LoginDto {
@@ -31,6 +32,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly environment: Environment,
+    private readonly workspace: WorkspaceService,
   ) {}
   @Post("login")
   @Public()
@@ -54,10 +56,12 @@ export class AuthController {
       maxAge: AuthService.lifetimeMs,
       path: "/",
     });
+    const workspace = await this.workspace.current();
     return {
+      workspace,
       user,
       csrfToken,
-      today: this.environment.today(),
+      today: workspace.today,
       timezone: this.environment.timezone,
     };
   }
@@ -69,7 +73,8 @@ export class AuthController {
   me(@Req() request: SessionRequest) {
     return {
       ...request.session,
-      today: this.environment.today(),
+      workspace: request.workspace,
+      today: request.workspace.today,
       timezone: this.environment.timezone,
     };
   }

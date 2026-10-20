@@ -13,7 +13,13 @@ async function proxy(
     base,
   );
   const headers = new Headers();
-  for (const name of ["cookie", "content-type", "origin", "x-csrf-token"]) {
+  for (const name of [
+    "cookie",
+    "content-type",
+    "origin",
+    "x-csrf-token",
+    "x-data-version",
+  ]) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
@@ -29,7 +35,12 @@ async function proxy(
       signal: AbortSignal.timeout(12000),
     });
     const responseHeaders = new Headers({ "Cache-Control": "no-store" });
-    for (const name of ["content-type", "location", "retry-after"]) {
+    for (const name of [
+      "content-type",
+      "location",
+      "retry-after",
+      "x-data-version",
+    ]) {
       const value = upstream.headers.get(name);
       if (value) responseHeaders.set(name, value);
     }

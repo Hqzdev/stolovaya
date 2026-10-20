@@ -1,5 +1,6 @@
 import {
   CanActivate,
+  ConflictException,
   ExecutionContext,
   ForbiddenException,
   Injectable,
@@ -7,14 +8,16 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import type { Request } from "express";
+import type { Response } from "express";
+import { WorkspaceService } from "../workspace/workspace.service";
+import type { WorkspaceRequest } from "../workspace/workspace.context";
 import type { Role } from "@stolovaya/contracts";
 import { AuthService, AuthenticatedSession } from "./auth.service";
 import { Environment } from "../config/environment";
 
 export const Public = () => SetMetadata("public", true);
 export const Roles = (...roles: Role[]) => SetMetadata("roles", roles);
-export interface SessionRequest extends Request {
+export interface SessionRequest extends WorkspaceRequest {
   session: AuthenticatedSession;
 }
 
@@ -24,6 +27,7 @@ export class AccessGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly auth: AuthService,
     private readonly environment: Environment,
+    private readonly workspace: WorkspaceService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<SessionRequest>();
@@ -50,6 +54,24 @@ export class AccessGuard implements CanActivate {
     ]);
     if (roles && !roles.includes(session.user.role))
       throw new ForbiddenException("Этот раздел доступен только другой роли.");
+    request.workspace = await this.workspace.current();
+    if (
+      this.reflector.getAllAndOverride<boolean>("workspaceData", [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    ) {
+      const version = String(request.workspace.version);
+      context
+        .switchToHttp()
+        .getResponse<Response>()
+        .setHeader("X-Data-Version", version);
+      const expected = request.headers["x-data-version"];
+      if ((expected && expected !== version) || (mutating && !expected))
+        throw new ConflictException(
+          "Режим данных изменился. Обновите страницу перед продолжением.",
+        );
+    }
     return true;
   }
 }

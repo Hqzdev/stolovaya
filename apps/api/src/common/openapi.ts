@@ -50,7 +50,19 @@ export function describeResponses(document: OpenAPIObject): OpenAPIObject {
     recent: array("Order"),
     updatedAt: timestamp,
   };
+  const workspace = {
+    mode: { type: "string" as const, enum: ["live", "demo"] },
+    version: integer,
+    demoDate: { type: "string" as const, format: "date", nullable: true },
+    today: { type: "string" as const, format: "date" },
+  };
   const schemas: Record<string, SchemaObject> = {
+    WorkspaceState: object(workspace),
+    WorkspaceSettings: object({
+      ...workspace,
+      liveOrders: integer,
+      demoOrders: integer,
+    }),
     Identity: object({
       role: { type: "string", enum: ["admin", "cook"] },
       login: string,
@@ -60,6 +72,7 @@ export function describeResponses(document: OpenAPIObject): OpenAPIObject {
       today: { type: "string", format: "date" },
       timezone: string,
       csrfToken: string,
+      workspace: ref("WorkspaceState"),
     }),
     CatalogEntry: object({ id: string, name: string }),
     Catalog: object({
@@ -117,6 +130,8 @@ export function describeResponses(document: OpenAPIObject): OpenAPIObject {
       ["/auth/me", "get", 200, "ApplicationContext"],
       ["/auth/logout", "post", 204, null],
       ["/catalog", "get", 200, "Catalog"],
+      ["/settings", "get", 200, "WorkspaceSettings"],
+      ["/settings/data-mode", "patch", 200, "WorkspaceSettings"],
       ["/orders", "get", 200, "OrderPage"],
       ["/orders", "post", 201, "OrderDetail"],
       ["/orders/{id}", "get", 200, "OrderDetail"],
@@ -139,6 +154,18 @@ export function describeResponses(document: OpenAPIObject): OpenAPIObject {
         description: "Ошибка запроса",
         content: { "application/json": { schema: ref("ApiError") } },
       };
+    if (path.startsWith("/orders") || path.startsWith("/analytics"))
+      operation.parameters = [
+        ...(operation.parameters || []),
+        {
+          name: "X-Data-Version",
+          in: "header",
+          required: method !== "get",
+          schema: string,
+          description:
+            "workspace.version из /auth/me; устаревшая версия возвращает 409",
+        },
+      ];
     if (method !== "get")
       operation.parameters = [
         ...(operation.parameters || []),

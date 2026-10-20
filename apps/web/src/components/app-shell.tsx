@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, LogOut, Utensils } from "lucide-react";
+import { BookOpen, FlaskConical, LogOut, Utensils } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useApplication, useAuth } from "./auth-provider";
 import { ErrorNotice } from "./ui";
@@ -19,7 +19,7 @@ export function Brand() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { user } = useApplication();
+  const { user, workspace } = useApplication();
   const { logout } = useAuth();
   const pathname = usePathname();
   const motionRoot = useBlockMotion();
@@ -30,6 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       ? [
           { href: "/admin", label: "Статистика" },
           { href: "/admin/orders", label: "Заказы" },
+          { href: "/admin/settings", label: "Настройки" },
         ]
       : [{ href: "/cook", label: "Заказы на сегодня" }];
   if (
@@ -68,6 +69,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3">
+          <span
+            className={`hidden rounded-full px-3 py-1.5 text-[11px] md:block ${workspace.mode === "demo" ? "bg-warm text-warm-ink" : "bg-neutral text-muted"}`}
+          >
+            {workspace.mode === "demo" ? "Демо" : "Рабочие данные"}
+          </span>
           <span className="hidden size-8 items-center justify-center rounded-full bg-[#e9e6e1] text-[11px] font-semibold sm:flex">
             {user.role === "admin" ? "АД" : "ПВ"}
           </span>
@@ -89,6 +95,26 @@ export function AppShell({ children }: { children: ReactNode }) {
         id="main"
         className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 px-6 py-9 lg:px-10 xl:px-16"
       >
+        {workspace.mode === "demo" && (
+          <div
+            role="status"
+            className="motion-block flex flex-wrap items-center gap-3 rounded-xl border border-yellow/30 bg-warm px-5 py-3 text-[13px] text-warm-ink"
+          >
+            <FlaskConical size={17} className="shrink-0" />
+            <p className="flex-1">
+              Демонстрационный режим · Заказы и статистика для проверки. Рабочие
+              данные хранятся отдельно.
+            </p>
+            {user.role === "admin" && (
+              <Link
+                href="/admin/settings"
+                className="font-medium underline underline-offset-4"
+              >
+                Управление режимом
+              </Link>
+            )}
+          </div>
+        )}
         {error && <ErrorNotice message={error} />}
         {children}
       </main>

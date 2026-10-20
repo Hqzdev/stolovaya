@@ -1,3 +1,4 @@
+import { WorkspaceData } from "../workspace/workspace.context";
 import { Controller, Get, Param, Query } from "@nestjs/common";
 import { ApiCookieAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../auth/access.guard";
@@ -6,6 +7,7 @@ import { AnalyticsService } from "./analytics.service";
 
 @ApiTags("Аналитика администратора")
 @ApiCookieAuth()
+@WorkspaceData()
 @Roles("admin")
 @Controller("analytics")
 export class AnalyticsController {

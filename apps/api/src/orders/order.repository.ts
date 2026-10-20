@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import type {
+  DataMode,
   CreateOrder,
   Order,
   OrderDetail,
@@ -13,6 +14,8 @@ import type {
   Totals,
 } from "@stolovaya/contracts";
 import { Database } from "../database/database";
+import { WorkspaceContext } from "../workspace/workspace.context";
+import { WorkspaceRepository } from "../workspace/workspace.repository";
 import { OrderQuery } from "./order.dto";
 
 export const orderSelect = `o.id, o.dish_id AS "dishId", d.name AS dish, o.group_id AS "groupId", g.name AS "group",
@@ -30,9 +33,12 @@ export const totalsSelect = `COALESCE(sum(o.quantity), 0)::float8 AS planned,
 export class OrderFilter {
   readonly values: unknown[];
   readonly where: string;
-  constructor(scope: Scope, query: OrderQuery = {}) {
-    this.values = [scope.from, scope.to];
-    const parts = ["o.service_date BETWEEN $1::date AND $2::date"];
+  constructor(scope: Scope, mode: DataMode, query: OrderQuery = {}) {
+    this.values = [scope.from, scope.to, mode];
+    const parts = [
+      "o.service_date BETWEEN $1::date AND $2::date",
+      "o.data_mode = $3",
+    ];
     const add = (value: unknown, clause: (placeholder: string) => string) => {
       this.values.push(value);
       parts.push(clause(`$${this.values.length}`));
@@ -64,10 +70,14 @@ export class OrderFilter {
 
 @Injectable()
 export class OrderRepository {
-  constructor(private readonly database: Database) {}
+  constructor(
+    private readonly database: Database,
+    private readonly workspace: WorkspaceContext,
+    private readonly settings: WorkspaceRepository,
+  ) {}
   async list(scope: Scope, query: OrderQuery): Promise<OrderPage> {
-    const filter = new OrderFilter(scope, query);
-    const scopeFilter = new OrderFilter(scope);
+    const filter = new OrderFilter(scope, this.workspace.state.mode, query);
+    const scopeFilter = new OrderFilter(scope, this.workspace.state.mode);
     const [totals] = await this.database.query<Totals>(
       `SELECT ${totalsSelect} FROM ${orderJoin} WHERE ${filter.where}`,
       filter.values,
@@ -108,8 +118,8 @@ export class OrderRepository {
   }
   async detail(id: number): Promise<OrderDetail> {
     const [order] = await this.database.query<Order>(
-      `SELECT ${orderSelect} FROM ${orderJoin} WHERE o.id = $1`,
-      [id],
+      `SELECT ${orderSelect} FROM ${orderJoin} WHERE o.id = $1 AND o.data_mode = $2`,
+      [id, this.workspace.state.mode],
     );
     if (!order) throw new NotFoundException("Заказ не найден.");
     const events = await this.database.query<OrderDetail["events"][number]>(
@@ -120,8 +130,9 @@ export class OrderRepository {
   }
   async create(data: CreateOrder, actor: string): Promise<OrderDetail> {
     const id = await this.database.transaction(async (client) => {
+      await this.settings.assertCurrent(client, this.workspace.state);
       const result = await client.query<{ id: number }>(
-        "INSERT INTO orders (dish_id, group_id, quantity, service_date, serving_time, created_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
+        "INSERT INTO orders (dish_id, group_id, quantity, service_date, serving_time, created_by, data_mode) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id",
         [
           data.dishId,
           data.groupId,
@@ -129,6 +140,7 @@ export class OrderRepository {
           data.serviceDate,
           data.servingTime,
           actor,
+          this.workspace.state.mode,
         ],
       );
       const id = result.rows[0].id;
@@ -146,9 +158,10 @@ export class OrderRepository {
     actor: string,
   ): Promise<OrderDetail> {
     await this.database.transaction(async (client) => {
+      await this.settings.assertCurrent(client, this.workspace.state);
       const result = await client.query<{ status: OrderStatus }>(
-        "SELECT status FROM orders WHERE id = $1 FOR UPDATE",
-        [id],
+        "SELECT status FROM orders WHERE id = $1 AND data_mode = $2 FOR UPDATE",
+        [id, this.workspace.state.mode],
       );
       const current = result.rows[0]?.status;
       if (!current) throw new NotFoundException("Заказ не найден.");

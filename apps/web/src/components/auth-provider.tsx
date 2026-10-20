@@ -15,6 +15,7 @@ interface AuthContextValue {
   context: ApplicationContext | null;
   login(login: string, password: string): Promise<void>;
   logout(): Promise<void>;
+  refreshContext(): Promise<void>;
 }
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((value) => {
         if (!active) return;
         api.setCsrfToken(value.csrfToken);
+        api.setDataVersion(value.workspace.version);
         setContext(value);
         setError("");
         setResolved(true);
@@ -61,6 +63,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
       router.replace(context.user.role === "admin" ? "/admin" : "/cook");
   }, [resolved, error, context, pathname, router]);
+  const refreshContext = useCallback(async () => {
+    const value = await api.request<ApplicationContext>("/auth/me");
+    api.setCsrfToken(value.csrfToken);
+    api.setDataVersion(value.workspace.version);
+    setContext((previous) =>
+      previous?.workspace.version === value.workspace.version &&
+      previous.today === value.today
+        ? previous
+        : value,
+    );
+  }, []);
+  const role = context?.user.role;
+  useEffect(() => {
+    if (!role) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible")
+        void refreshContext().catch(() => {});
+    };
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("stolovaya:workspace-changed", refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("stolovaya:workspace-changed", refresh);
+    };
+  }, [role, refreshContext]);
   const login = useCallback(
     async (login: string, password: string) => {
       const value = await api.request<ApplicationContext>("/auth/login", {
@@ -68,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ login, password }),
       });
       api.setCsrfToken(value.csrfToken);
+      api.setDataVersion(value.workspace.version);
       setContext(value);
       setError("");
       router.replace(value.user.role === "admin" ? "/admin" : "/cook");
@@ -107,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   if (!context && pathname !== "/login") return null;
   return (
-    <AuthContext.Provider value={{ context, login, logout }}>
+    <AuthContext.Provider value={{ context, login, logout, refreshContext }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { api } from "./api";
+import { api, ApiError } from "./api";
+import { useApplication } from "@/components/auth-provider";
 
 interface Resource<T> {
   key: string;
@@ -10,6 +11,9 @@ interface Resource<T> {
 }
 
 export function useResource<T>(key: string, poll = true) {
+  const { workspace } = useApplication();
+  const version = workspace.version;
+  const resourceKey = `${version}:${key}`;
   const [revision, setRevision] = useState(0);
   const [state, setState] = useState<Resource<T>>({
     key: "",
@@ -26,13 +30,21 @@ export function useResource<T>(key: string, poll = true) {
       if (fetching) return;
       fetching = true;
       try {
-        const data = await api.request<T>(key, { signal: controller.signal });
-        if (active) setState({ key, data, error: null, loading: false });
+        const data = await api.request<T>(key, {
+          signal: controller.signal,
+          headers: { "X-Data-Version": String(version) },
+        });
+        if (active)
+          setState({ key: resourceKey, data, error: null, loading: false });
       } catch (error) {
         if (active && !controller.signal.aborted)
           setState((previous) => ({
-            key,
-            data: previous.key === key ? previous.data : null,
+            key: resourceKey,
+            data:
+              previous.key === resourceKey &&
+              !(error instanceof ApiError && error.workspaceChanged)
+                ? previous.data
+                : null,
             error:
               error instanceof Error
                 ? error.message
@@ -55,8 +67,10 @@ export function useResource<T>(key: string, poll = true) {
       window.clearInterval(timer);
       window.removeEventListener("focus", reload);
     };
-  }, [key, revision, poll]);
+  }, [key, revision, poll, version, resourceKey]);
   const current =
-    state.key === key ? state : { key, data: null, error: null, loading: true };
+    state.key === resourceKey
+      ? state
+      : { key: resourceKey, data: null, error: null, loading: true };
   return { ...current, refresh };
 }

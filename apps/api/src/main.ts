@@ -37,7 +37,7 @@ async function bootstrap(): Promise<void> {
   const options = new DocumentBuilder()
     .setTitle("Столовая — API")
     .setDescription(
-      "Две роли из .env. Для изменяющих запросов обязательны Origin и X-CSRF-Token из /auth/me.",
+      "Две роли из .env. Для изменяющих запросов обязательны Origin и X-CSRF-Token из /auth/me. При изменении заказов также нужен X-Data-Version (workspace.version).",
     )
     .setVersion("1.0.0")
     .addCookieAuth("stolovaya_session")

@@ -17,6 +17,7 @@ import {
 } from "../orders/order.repository";
 import { ScopeService } from "../orders/scope.service";
 import { OrderQuery } from "../orders/order.dto";
+import { WorkspaceContext } from "../workspace/workspace.context";
 import { CatalogService } from "../catalog/catalog.service";
 
 @Injectable()
@@ -26,10 +27,11 @@ export class AnalyticsService {
     private readonly scopes: ScopeService,
     private readonly orders: OrderRepository,
     private readonly catalog: CatalogService,
+    private readonly workspace: WorkspaceContext,
   ) {}
   async overview(query: OrderQuery): Promise<Analytics> {
     const scope = this.scopes.resolve(query);
-    const filter = new OrderFilter(scope, {
+    const filter = new OrderFilter(scope, this.workspace.state.mode, {
       dish: query.dish,
       group: query.group,
     });

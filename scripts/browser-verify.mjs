@@ -13,6 +13,8 @@ const errors = [];
 let createdId;
 let checks = 0;
 const contexts = [];
+const numericText = (value) =>
+  new RegExp(`^${String(value).split("").join("\\s*")}$`);
 function check(value, message) {
   assert.ok(value, message);
   checks++;
@@ -40,6 +42,16 @@ async function session(role) {
 }
 try {
   const admin = await session("admin");
+  const workspace = await admin.evaluate(
+    async () => (await (await fetch("/api/v1/auth/me")).json()).workspace,
+  );
+  check(
+    workspace.mode === "demo",
+    "Браузерный сценарий запущен на демонстрационных данных",
+  );
+  const week = await admin.evaluate(
+    async () => await (await fetch("/api/v1/analytics?period=week")).json(),
+  );
   await admin
     .getByRole("heading", { name: "Статистика питания", exact: true })
     .waitFor();
@@ -57,15 +69,8 @@ try {
     (await admin.locator("tbody tr").count()) > 0,
     "Показатель выдачи открывает готовые заказы",
   );
-  await admin
-    .locator("tbody tr")
-    .filter({ hasText: "#1248" })
-    .getByRole("link")
-    .first()
-    .click();
-  await admin
-    .getByRole("heading", { name: "Заказ #1248", exact: true })
-    .waitFor();
+  await admin.locator("tbody tr").first().getByRole("link").first().click();
+  await admin.getByRole("heading", { name: /^Заказ #/ }).waitFor();
   check(
     await admin
       .getByRole("heading", { name: "История заказа", exact: true })
@@ -78,20 +83,26 @@ try {
   await admin
     .locator("main a")
     .filter({ hasText: "Выдано порций" })
-    .getByText("994", { exact: true })
+    .getByText(numericText(week.totals.issued))
     .waitFor();
-  check(true, "Переключение недели показывает 994 порции");
+  check(
+    true,
+    `Переключение недели показывает ${week.totals.issued} порций из PostgreSQL`,
+  );
   await admin.locator('svg[aria-label^="Количество"] a').first().click();
   await admin.waitForURL("**/admin/orders?**on=*");
   check(
     new URL(admin.url()).searchParams.has("on"),
     "Столбец графика открывает заказы выбранного дня",
   );
-  await admin.goto("/admin/orders?period=week&page=5");
+  await admin.goto(
+    `/admin/orders?period=week&page=${Math.ceil(week.totals.orders / 10)}`,
+  );
   await admin.locator("tbody tr").first().waitFor();
   check(
-    (await admin.locator("tbody tr").count()) === 4,
-    "Последняя страница: 4 записи из 44",
+    (await admin.locator("tbody tr").count()) ===
+      ((week.totals.orders - 1) % 10) + 1,
+    "Последняя страница соответствует количеству заказов из PostgreSQL",
   );
   await admin
     .getByRole("textbox", { name: "Найти блюдо, класс или заказ" })
@@ -164,7 +175,7 @@ try {
   await admin
     .locator("main a")
     .filter({ hasText: "Выдано порций" })
-    .getByText(String(before + 3), { exact: true })
+    .getByText(numericText(before + 3))
     .waitFor({ timeout: 20000 });
   check(true, "Открытый кабинет администратора получает новые порции");
   const result = await pool.query(
@@ -175,6 +186,68 @@ try {
     result.rows[0].status === "ready" && result.rows[0].quantity === 3,
     "Данные браузерного сценария подтверждены SQL-запросом",
   );
+  await cook.goto("/cook/orders/new");
+  await cook.getByLabel("Блюдо", { exact: true }).selectOption("soup");
+  await cook.getByLabel("Количество порций", { exact: true }).fill("5");
+  await admin.getByRole("link", { name: "Настройки", exact: true }).click();
+  await admin
+    .getByRole("heading", { name: "Настройки", exact: true })
+    .waitFor();
+  await admin
+    .getByRole("radio", { name: "Рабочие данные", exact: true })
+    .check();
+  await admin
+    .getByRole("button", { name: "Включить рабочие данные", exact: true })
+    .click();
+  await admin
+    .getByText("Включены рабочие данные для обоих кабинетов.", { exact: true })
+    .waitFor();
+  check(true, "Настройки переключают приложение в рабочий режим");
+  await cook
+    .getByRole("alert")
+    .filter({ hasText: "Режим данных изменился" })
+    .waitFor({ timeout: 20000 });
+  check(
+    (await cook
+      .getByLabel("Количество порций", { exact: true })
+      .inputValue()) === "5" &&
+      (await cook
+        .getByRole("button", { name: "Добавить блюдо", exact: true })
+        .isDisabled()),
+    "Открытая форма узнаёт о смене режима, сохраняет поля и блокирует отправку",
+  );
+  await cook.goto("/cook");
+  await cook
+    .getByRole("heading", { name: "Заказы на сегодня", exact: true })
+    .waitFor();
+  await cook
+    .getByText("Загружаем данные…", { exact: true })
+    .waitFor({ state: "hidden" });
+  check(
+    (await cook
+      .locator("tbody tr")
+      .filter({ hasText: `#${createdId}` })
+      .count()) === 0,
+    "Демонстрационный заказ отсутствует в рабочем кабинете повара",
+  );
+  await admin
+    .getByRole("radio", { name: "Демонстрационные данные", exact: true })
+    .check();
+  await admin
+    .getByRole("button", { name: "Включить демо", exact: true })
+    .click();
+  await admin
+    .getByText("Демо включено для обоих кабинетов.", { exact: true })
+    .waitFor();
+  await cook
+    .locator("tbody tr")
+    .filter({ hasText: `#${createdId}` })
+    .waitFor({ timeout: 20000 });
+  check(
+    true,
+    "Повторное включение демо возвращает сохранённый заказ в открытый кабинет",
+  );
+  await admin.goto("/admin");
   await admin.setViewportSize({ width: 1024, height: 900 });
   check(
     await admin.evaluate(

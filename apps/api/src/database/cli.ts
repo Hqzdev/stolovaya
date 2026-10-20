@@ -19,6 +19,9 @@ async function main(): Promise<void> {
     try {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(73810292)");
+      await client.query(
+        "SELECT id FROM workspace_settings WHERE id = true FOR UPDATE",
+      );
       const date =
         command === "demo" ? await seedDemo(client, environment) : null;
       if (command === "catalog") await seedCatalog(client);

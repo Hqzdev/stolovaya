@@ -16,6 +16,10 @@ if (!login.ok)
 const context = await login.json();
 const cookie = login.headers.getSetCookie()[0].split(";")[0];
 try {
+  if (context.workspace.mode !== "demo")
+    throw new Error(
+      "Для экспорта примеров включите демо в настройках администратора.",
+    );
   const response = await fetch(
     `${base}/api/v1/analytics?period=week&date=${process.env.DEMO_DATE || context.today}`,
     { headers: { Cookie: cookie } },

@@ -22,7 +22,8 @@
     "screenshots": "node scripts/screenshots.mjs",
     "readme:assets": "node scripts/readme-assets.mjs",
     "format": "prettier --write apps packages scripts docs *.md *.json *.mjs *.yaml .github",
-    "verify:credentials": "npm run build -w @stolovaya/api && node scripts/verify-credentials.mjs"
+    "verify:credentials": "npm run build -w @stolovaya/api && node scripts/verify-credentials.mjs",
+    "verify:data-modes": "npm run build -w @stolovaya/api && node scripts/verify-data-modes.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -17,7 +17,11 @@ async function request(path, session, method = "GET", body, extra = {}) {
       "Content-Type": "application/json",
       Origin: origin,
       ...(session
-        ? { Cookie: session.cookie, "X-CSRF-Token": session.csrfToken }
+        ? {
+            Cookie: session.cookie,
+            "X-CSRF-Token": session.csrfToken,
+            "X-Data-Version": String(session.version),
+          }
         : {}),
       ...extra,
     },
@@ -46,6 +50,8 @@ async function login(role) {
     cookie: result.response.headers.getSetCookie()[0].split(";")[0],
     csrfToken: result.body.csrfToken,
     today: result.body.today,
+    version: result.body.workspace.version,
+    mode: result.body.workspace.mode,
   };
   sessions.push(session);
   return session;
@@ -109,6 +115,7 @@ try {
   const scope = `date=${date}&period=day`;
   const baseline = (await request(`/analytics?${scope}`, admin)).body;
   if (process.env.VERIFY_DEMO === "true") {
+    check(admin.mode === "demo", "Для контрольных значений выбран режим демо");
     check(
       baseline.totals.issued === 174 &&
         baseline.totals.planned === 246 &&

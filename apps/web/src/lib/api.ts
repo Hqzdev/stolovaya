@@ -2,6 +2,7 @@ export class ApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly workspaceChanged = false,
   ) {
     super(message);
     this.name = "ApiError";
@@ -10,6 +11,10 @@ export class ApiError extends Error {
 
 export class ApiClient {
   private csrfToken = "";
+  private dataVersion = "";
+  setDataVersion(value: number): void {
+    this.dataVersion = String(value);
+  }
   setCsrfToken(value: string): void {
     this.csrfToken = value;
   }
@@ -23,6 +28,7 @@ export class ApiClient {
         headers: {
           "Content-Type": "application/json",
           "X-CSRF-Token": this.csrfToken,
+          "X-Data-Version": this.dataVersion,
           ...options.headers,
         },
       });
@@ -31,6 +37,17 @@ export class ApiClient {
       throw new ApiError(
         "Не удалось связаться с сервером. Проверьте соединение и попробуйте снова.",
         0,
+      );
+    }
+    const expected =
+      new Headers(options.headers).get("X-Data-Version") || this.dataVersion;
+    const actual = response.headers.get("X-Data-Version");
+    if (actual && (actual !== expected || actual !== this.dataVersion)) {
+      window.dispatchEvent(new Event("stolovaya:workspace-changed"));
+      throw new ApiError(
+        "Режим данных изменился. Обновляем рабочее место…",
+        409,
+        true,
       );
     }
     if (!response.ok) {

@@ -22,7 +22,9 @@ import {
 } from "@/components/ui";
 
 export default function NewOrderPage() {
-  const { today } = useApplication();
+  const { today, workspace } = useApplication();
+  const [draftVersion] = useState(workspace.version);
+  const stale = draftVersion !== workspace.version;
   const router = useRouter();
   const {
     data: catalog,
@@ -44,6 +46,7 @@ export default function NewOrderPage() {
     setDraft((previous) => ({ ...previous, [key]: value }));
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (stale) return;
     setSaveError("");
     const quantity = Number(draft.quantity);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
@@ -54,6 +57,7 @@ export default function NewOrderPage() {
     try {
       const result = await api.request<OrderDetail>("/orders", {
         method: "POST",
+        headers: { "X-Data-Version": String(draftVersion) },
         body: JSON.stringify({ ...draft, quantity }),
       });
       setCreated(result);
@@ -79,6 +83,9 @@ export default function NewOrderPage() {
         title="Добавить блюдо"
         subtitle="Создайте заказ для класса или группы."
       />
+      {stale && (
+        <ErrorNotice message="Режим данных изменился. Заполненные поля сохранены на экране. Вернитесь к списку и откройте новую форму для текущего режима." />
+      )}
       {loading && <Loading />}
       {error && <ErrorNotice message={error} retry={refresh} />}
       {created && (
@@ -194,7 +201,9 @@ export default function NewOrderPage() {
                 <Button
                   type="submit"
                   busy={busy}
-                  disabled={!catalog.dishes.length || !catalog.groups.length}
+                  disabled={
+                    stale || !catalog.dishes.length || !catalog.groups.length
+                  }
                 >
                   Добавить блюдо
                 </Button>

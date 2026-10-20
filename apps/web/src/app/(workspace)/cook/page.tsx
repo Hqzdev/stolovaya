@@ -21,7 +21,7 @@ import {
 } from "@/components/ui";
 
 export default function CookOrders() {
-  const { today } = useApplication();
+  const { today, workspace } = useApplication();
   const params = useSearchParams();
   const query = new URLSearchParams(params);
   query.set("date", today);
@@ -43,6 +43,7 @@ export default function CookOrders() {
     try {
       await api.request(`/orders/${order.id}/status`, {
         method: "PATCH",
+        headers: { "X-Data-Version": String(workspace.version) },
         body: JSON.stringify({
           status: order.status === "new" ? "cooking" : "ready",
         }),

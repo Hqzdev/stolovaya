@@ -17,6 +17,11 @@ import { OrderController } from "./orders/order.controller";
 import { AnalyticsService } from "./analytics/analytics.service";
 import { AnalyticsController } from "./analytics/analytics.controller";
 
+import { WorkspaceRepository } from "./workspace/workspace.repository";
+import { WorkspaceService } from "./workspace/workspace.service";
+import { WorkspaceContext } from "./workspace/workspace.context";
+import { SettingsController } from "./workspace/settings.controller";
+
 @ApiTags("Состояние")
 @Controller("health")
 class HealthController {
@@ -34,6 +39,7 @@ class HealthController {
   imports: [ThrottlerModule.forRoot([{ ttl: 60000, limit: 300 }])],
   controllers: [
     HealthController,
+    SettingsController,
     AuthController,
     CatalogController,
     OrderController,
@@ -42,6 +48,9 @@ class HealthController {
   providers: [
     Environment,
     Database,
+    WorkspaceRepository,
+    WorkspaceService,
+    WorkspaceContext,
     CredentialsService,
     AuthService,
     CatalogService,

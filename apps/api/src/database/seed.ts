@@ -26,24 +26,21 @@ export async function seedCatalog(client: PoolClient): Promise<void> {
   }
 }
 
-type SeedOrder = [
-  number,
-  string,
-  string,
-  number,
-  number,
-  string,
-  OrderStatus,
-  string?,
-];
+type SeedOrder = [string, string, number, number, string, OrderStatus, string?];
 
 export async function seedDemo(
   client: PoolClient,
   environment: Environment,
 ): Promise<string> {
-  if ((await client.query("SELECT 1 FROM orders LIMIT 1")).rowCount)
+  if (
+    (
+      await client.query(
+        "SELECT 1 FROM orders WHERE data_mode = 'demo' LIMIT 1",
+      )
+    ).rowCount
+  )
     throw new Error(
-      "Демонстрационные заказы загружаются только в пустую базу. Существующие заказы сохранены.",
+      "Демонстрационный набор уже существует. Рабочие и демонстрационные заказы сохранены.",
     );
   const anchor = process.env.DEMO_DATE || environment.today();
   if (
@@ -107,11 +104,9 @@ export async function seedDemo(
       ],
     ],
   ];
-  let id = 1200;
   for (const [offset, rows] of history)
     rows.forEach(([dish, group, quantity], index) =>
       records.push([
-        id++,
         dish,
         group,
         quantity,
@@ -130,20 +125,19 @@ export async function seedDemo(
     [-3, "casserole", "7a", 22, "new"],
   ];
   for (const [offset, dish, group, quantity, status] of pending)
-    records.push([id++, dish, group, quantity, offset, "11:30", status]);
+    records.push([dish, group, quantity, offset, "11:30", status]);
   records.push(
-    [1251, "casserole", "9a", 26, 0, "11:40", "new"],
-    [1250, "cutlet", "7a", 26, 0, "11:25", "cooking"],
-    [1249, "soup", "8v", 20, 0, "11:15", "cooking"],
-    [1248, "soup", "9a", 32, 0, "10:20", "ready", "10:28"],
-    [1247, "cutlet", "10b", 26, 0, "10:00", "ready", "10:12"],
-    [1246, "casserole", "8v", 18, 0, "09:30", "ready", "09:42"],
-    [1245, "soup", "7a", 30, 0, "09:20", "ready", "09:28"],
-    [1244, "cutlet", "9a", 36, 0, "09:10", "ready", "09:22"],
-    [1243, "casserole", "10b", 32, 0, "08:50", "ready", "08:58"],
+    ["casserole", "9a", 26, 0, "11:40", "new"],
+    ["cutlet", "7a", 26, 0, "11:25", "cooking"],
+    ["soup", "8v", 20, 0, "11:15", "cooking"],
+    ["soup", "9a", 32, 0, "10:20", "ready", "10:28"],
+    ["cutlet", "10b", 26, 0, "10:00", "ready", "10:12"],
+    ["casserole", "8v", 18, 0, "09:30", "ready", "09:42"],
+    ["soup", "7a", 30, 0, "09:20", "ready", "09:28"],
+    ["cutlet", "9a", 36, 0, "09:10", "ready", "09:22"],
+    ["casserole", "10b", 32, 0, "08:50", "ready", "08:58"],
   );
   for (const [
-    id,
     dish,
     group,
     quantity,
@@ -156,11 +150,12 @@ export async function seedDemo(
     day.setUTCDate(day.getUTCDate() + offset);
     const date = day.toISOString().slice(0, 10);
     const timestamp = (time: string) => `${date} ${time}:00`;
-    await client.query(
-      `INSERT INTO orders (id,dish_id,group_id,quantity,service_date,serving_time,status,created_by,created_at,cooking_at,ready_at)
-      VALUES ($1,$2,$3,$4,$5,'12:10',$6,$7,$8::timestamp AT TIME ZONE $11,$9::timestamp AT TIME ZONE $11,$10::timestamp AT TIME ZONE $11)`,
+    const {
+      rows: [order],
+    } = await client.query<{ id: number }>(
+      `INSERT INTO orders (dish_id,group_id,quantity,service_date,serving_time,status,created_by,created_at,cooking_at,ready_at,data_mode)
+      VALUES ($1,$2,$3,$4,'12:10',$5,$6,$7::timestamp AT TIME ZONE $10,$8::timestamp AT TIME ZONE $10,$9::timestamp AT TIME ZONE $10,'demo') RETURNING id`,
       [
-        id,
         dish,
         group,
         quantity,
@@ -179,11 +174,12 @@ export async function seedDemo(
     for (const [state, time] of events)
       await client.query(
         "INSERT INTO order_events (order_id,status,actor,happened_at) VALUES ($1,$2,$3,$4::timestamp AT TIME ZONE $5)",
-        [id, state, actor, timestamp(time), environment.timezone],
+        [order.id, state, actor, timestamp(time), environment.timezone],
       );
   }
   await client.query(
-    "SELECT setval(pg_get_serial_sequence('orders','id'), (SELECT max(id) FROM orders))",
+    "UPDATE workspace_settings SET demo_date = $1 WHERE id = true",
+    [anchor],
   );
   return anchor;
 }

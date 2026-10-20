@@ -1,4 +1,15 @@
 export type Role = "admin" | "cook";
+export type DataMode = "live" | "demo";
+export interface WorkspaceState {
+  mode: DataMode;
+  version: number;
+  demoDate: string | null;
+  today: string;
+}
+export interface WorkspaceSettings extends WorkspaceState {
+  liveOrders: number;
+  demoOrders: number;
+}
 export type OrderStatus = "new" | "cooking" | "ready";
 export interface Identity {
   role: Role;
@@ -9,6 +20,7 @@ export interface ApplicationContext {
   today: string;
   timezone: string;
   csrfToken: string;
+  workspace: WorkspaceState;
 }
 export interface CatalogEntry {
   id: string;

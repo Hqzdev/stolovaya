@@ -47,10 +47,14 @@ async function signIn(role) {
 try {
   await capture("login", "/login", "Вход в Столовую");
   await signIn("admin");
-  const today = await page.evaluate(
-    async () => (await (await fetch("/api/v1/auth/me")).json()).today,
+  const application = await page.evaluate(
+    async () => await (await fetch("/api/v1/auth/me")).json(),
   );
-  const date = process.env.DEMO_DATE || today;
+  if (application.workspace.mode !== "demo")
+    throw new Error(
+      "Для скриншотов включите демо в настройках администратора.",
+    );
+  const date = process.env.DEMO_DATE || application.today;
   await capture("admin-day", `/admin?date=${date}`, "Статистика питания");
   await capture(
     "admin-week",
@@ -68,7 +72,20 @@ try {
     "Куриный суп с лапшой",
   );
   await capture("group", `/admin/groups/9a?date=${date}`, "Класс 9А");
-  await capture("order", `/admin/orders/1248?date=${date}`, "Заказ #1248");
+  const order = await page.evaluate(
+    async (date) =>
+      (await (await fetch(`/api/v1/orders?date=${date}&status=ready`)).json())
+        .items[0],
+    date,
+  );
+  if (!order)
+    throw new Error("В демо нет готовых заказов для скриншота истории.");
+  await capture(
+    "order",
+    `/admin/orders/${order.id}?date=${date}`,
+    `Заказ #${order.id}`,
+  );
+  await capture("settings", "/admin/settings", "Настройки");
   await capture("components", "/components", "Компоненты и стили");
   await capture(
     "presentation-style",

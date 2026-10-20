@@ -1,3 +1,4 @@
+import { WorkspaceData } from "../workspace/workspace.context";
 import {
   Body,
   Controller,
@@ -16,6 +17,7 @@ import { OrderService } from "./order.service";
 
 @ApiTags("Заказы")
 @ApiCookieAuth()
+@WorkspaceData()
 @Controller("orders")
 export class OrderController {
   constructor(private readonly orders: OrderService) {}
