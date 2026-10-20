@@ -18,7 +18,7 @@ export class Environment {
   readonly sessionSecret = this.required("SESSION_SECRET", 32);
   readonly origin = this.readOrigin();
   readonly timezone = process.env.APP_TIMEZONE || "Asia/Yekaterinburg";
-  readonly port = Number(process.env.API_PORT || 4000);
+  readonly port = Number(process.env.PORT || process.env.API_PORT || 4000);
   readonly secureCookie = process.env.COOKIE_SECURE === "true";
   readonly accounts: readonly AccountConfiguration[] = Object.freeze([
     Object.freeze({
