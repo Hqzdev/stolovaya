@@ -109,15 +109,10 @@
     transform: scaleX(1);
   }
 
-  .motion-chart-bar {
-    transform-box: fill-box;
-    transform-origin: center bottom;
-    animation: bar-enter 640ms var(--ease-settle) backwards;
-    animation-delay: var(--motion-delay, 0ms);
-  }
-
+  .motion-chart-line,
+  .motion-chart-point,
   .motion-chart-label {
-    animation: content-enter 400ms ease-out backwards;
+    animation: content-enter 460ms ease-out backwards;
     animation-delay: var(--motion-delay, 0ms);
   }
 
@@ -130,7 +125,8 @@
 
   [data-motion-state="waiting"]
     :is(
-      .motion-chart-bar,
+      .motion-chart-line,
+      .motion-chart-point,
       .motion-chart-label,
       .motion-progress,
       .motion-field
@@ -146,7 +142,8 @@
       color 160ms ease,
       translate 160ms var(--ease-settle);
   }
-  .motion-chart-hit {
+  .motion-chart-hit,
+  .motion-chart-point {
     transition: fill 160ms ease;
   }
 
@@ -213,17 +210,6 @@
   }
 }
 
-@keyframes bar-enter {
-  from {
-    opacity: 0.4;
-    transform: scaleY(0.04);
-  }
-  to {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-}
-
 @keyframes progress-enter {
   from {
     transform: scaleX(0);
@@ -251,7 +237,6 @@
     .motion-card,
     .motion-control,
     .motion-status,
-    .motion-chart-bar,
     .motion-progress
   ) {
     transform: none !important;

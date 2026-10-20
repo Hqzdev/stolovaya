@@ -133,8 +133,12 @@ export function IssuedChart({
   query: URLSearchParams;
 }) {
   const maximum = Math.max(1, ...analytics.chart.map((point) => point.issued));
-  const count = analytics.chart.length,
-    unit = 700 / count;
+  const unit = 700 / Math.max(1, analytics.chart.length);
+  const points = analytics.chart.map((point, index) => ({
+    ...point,
+    x: index * unit + unit / 2,
+    y: 138 - (point.issued / maximum) * 100,
+  }));
   return (
     <Panel>
       <PanelHead
@@ -145,7 +149,7 @@ export function IssuedChart({
         }
       >
         <span className="mt-1 flex items-center gap-1.5 text-[11px] text-muted">
-          <span className="size-2 rounded-sm bg-blue" />
+          <span className="h-0.5 w-4 rounded-full bg-blue" />
           Порции
         </span>
       </PanelHead>
@@ -154,14 +158,21 @@ export function IssuedChart({
           key={`${analytics.scope.date}:${analytics.scope.period}`}
           viewBox="0 0 700 170"
           className="h-[170px] w-full"
-          role="img"
-          aria-label="Количество выданных порций; нажмите на столбец, чтобы открыть заказы"
+          role="group"
+          aria-label="Линейный график выданных порций; выберите точку, чтобы открыть заказы"
         >
           <line x1="0" x2="700" y1="138" y2="138" stroke="#efeeec" />
-          {analytics.chart.map((point, index) => {
-            const height = point.issued
-              ? Math.max(3, (point.issued / maximum) * 100)
-              : 2;
+          <polyline
+            className="motion-chart-line"
+            points={points.map((point) => `${point.x},${point.y}`).join(" ")}
+            fill="none"
+            stroke="#0075de"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            pointerEvents="none"
+          />
+          {points.map((point, index) => {
             const href = linkTo("/admin/orders", query, {
               status: "ready",
               ...(analytics.scope.period === "day"
@@ -175,37 +186,37 @@ export function IssuedChart({
                 className="group"
                 aria-label={`${point.label}: ${point.issued} порций, открыть заказы`}
               >
+                <title>{`${point.label}: ${number(point.issued)} порций`}</title>
                 <rect
                   x={index * unit + 4}
                   y="0"
                   width={unit - 8}
                   height="167"
                   rx="5"
-                  className="motion-chart-hit fill-transparent group-hover:fill-blue-tint"
+                  className="motion-chart-hit fill-transparent group-hover:fill-blue-tint group-focus-visible:fill-blue-tint"
                 />
                 <text
                   className="motion-chart-label"
                   data-motion-step={Math.min(index, 5)}
-                  x={index * unit + unit / 2}
-                  y={128 - height}
+                  x={point.x}
+                  y={point.y - 12}
                   textAnchor="middle"
                   fontSize={12}
                   fill="#111111"
                 >
                   {point.issued}
                 </text>
-                <rect
-                  className="motion-chart-bar"
+                <circle
+                  className="motion-chart-point fill-white group-hover:fill-blue group-focus-visible:fill-blue"
                   data-motion-step={Math.min(index, 5)}
-                  x={index * unit + unit * 0.22}
-                  y={138 - height}
-                  width={unit * 0.56}
-                  height={height}
-                  rx="3"
-                  fill={point.issued ? "#0075de" : "#dedbd7"}
+                  cx={point.x}
+                  cy={point.y}
+                  r="4"
+                  stroke="#0075de"
+                  strokeWidth="2"
                 />
                 <text
-                  x={index * unit + unit / 2}
+                  x={point.x}
                   y="160"
                   textAnchor="middle"
                   fontSize={11}
