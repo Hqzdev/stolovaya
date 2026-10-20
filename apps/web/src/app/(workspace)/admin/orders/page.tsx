@@ -1,21 +1,12 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import type { OrderPage } from "@stolovaya/contracts";
-import { useResource } from "../../../../lib/use-resource";
-import {
-  useScope,
-  PeriodControls,
-} from "../../../../components/analytics-widgets";
-import { OrderFilters } from "../../../../components/order-filters";
-import { OrderTable, Pagination } from "../../../../components/order-table";
-import {
-  Back,
-  ErrorNotice,
-  Heading,
-  Loading,
-  Panel,
-} from "../../../../components/ui";
-import { linkTo, number } from "../../../../lib/format";
+import { useResource } from "@/lib/use-resource";
+import { useScope, PeriodControls } from "@/components/analytics-widgets";
+import { OrderFilters } from "@/components/order-filters";
+import { OrderTable, Pagination } from "@/components/order-table";
+import { Back, ErrorNotice, Heading, Loading, Panel } from "@/components/ui";
+import { linkTo, number } from "@/lib/format";
 
 export default function AdminOrders() {
   const scope = useScope();
