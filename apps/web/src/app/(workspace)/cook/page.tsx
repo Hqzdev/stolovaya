@@ -32,7 +32,7 @@ export default function CookOrders() {
   const { data: all, refresh: refreshAll } = useResource<OrderPage>(
     `/orders?date=${today}`,
   );
-  const { data: catalog } = useResource<Catalog>("/catalog", false);
+  const { data: catalog } = useResource<Catalog>("/catalog");
   const [busyId, setBusyId] = useState<number>();
   const [actionError, setActionError] = useState("");
   const [success, setSuccess] = useState("");

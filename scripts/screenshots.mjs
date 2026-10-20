@@ -97,8 +97,8 @@ try {
   await signIn("cook");
   await capture("cook", "/cook", "Заказы на сегодня");
   await capture("new-order", "/cook/orders/new", "Добавить блюдо");
-  await page.getByLabel("Блюдо", { exact: true }).selectOption("soup");
-  await page.getByLabel("Класс / группа", { exact: true }).selectOption("9a");
+  await page.getByLabel("Блюдо", { exact: true }).fill("Куриный суп с лапшой");
+  await page.getByLabel("Класс / группа", { exact: true }).fill("9А");
   await page.screenshot({
     path: "docs/screenshots/new-order.png",
     fullPage: true,

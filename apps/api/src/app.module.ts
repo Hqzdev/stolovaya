@@ -8,6 +8,8 @@ import { CredentialsService } from "./auth/credentials.service";
 import { AuthService } from "./auth/auth.service";
 import { AccessGuard, Public } from "./auth/access.guard";
 import { AuthController } from "./auth/auth.controller";
+import { CatalogEntryRepository } from "./catalog/catalog-entry.repository";
+import { CatalogRepository } from "./catalog/catalog.repository";
 import { CatalogService } from "./catalog/catalog.service";
 import { CatalogController } from "./catalog/catalog.controller";
 import { ScopeService } from "./orders/scope.service";
@@ -54,6 +56,8 @@ class HealthController {
     CredentialsService,
     AuthService,
     CatalogService,
+    CatalogEntryRepository,
+    CatalogRepository,
     ScopeService,
     OrderRepository,
     OrderService,

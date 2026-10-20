@@ -2,9 +2,8 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Check, Info } from "lucide-react";
-import type { Catalog, OrderDetail } from "@stolovaya/contracts";
+import type { OrderDetail } from "@stolovaya/contracts";
 import { useApplication } from "@/components/auth-provider";
-import { useResource } from "@/lib/use-resource";
 import { api } from "@/lib/api";
 import { dateLabel, portions } from "@/lib/format";
 import {
@@ -15,9 +14,7 @@ import {
   Field,
   Heading,
   Input,
-  Loading,
   Panel,
-  Select,
   Status,
 } from "@/components/ui";
 
@@ -26,15 +23,9 @@ export default function NewOrderPage() {
   const [draftVersion] = useState(workspace.version);
   const stale = draftVersion !== workspace.version;
   const router = useRouter();
-  const {
-    data: catalog,
-    error,
-    loading,
-    refresh,
-  } = useResource<Catalog>("/catalog", false);
   const [draft, setDraft] = useState({
-    dishId: "",
-    groupId: "",
+    dishName: "",
+    groupName: "",
     quantity: "32",
     serviceDate: today,
     servingTime: "12:10",
@@ -72,10 +63,6 @@ export default function NewOrderPage() {
       setBusy(false);
     }
   }
-  const dish = catalog?.dishes.find((entry) => entry.id === draft.dishId)?.name;
-  const group = catalog?.groups.find(
-    (entry) => entry.id === draft.groupId,
-  )?.name;
   return (
     <>
       <Back href="/cook">Все заказы</Back>
@@ -86,8 +73,6 @@ export default function NewOrderPage() {
       {stale && (
         <ErrorNotice message="Режим данных изменился. Заполненные поля сохранены на экране. Вернитесь к списку и откройте новую форму для текущего режима." />
       )}
-      {loading && <Loading />}
-      {error && <ErrorNotice message={error} retry={refresh} />}
       {created && (
         <section
           role="status"
@@ -107,7 +92,7 @@ export default function NewOrderPage() {
           </ButtonLink>
         </section>
       )}
-      {catalog && !created && (
+      {!created && (
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_328px]">
           <Panel>
             <form onSubmit={submit} className="flex flex-col gap-6 p-7">
@@ -116,39 +101,28 @@ export default function NewOrderPage() {
                 <Status status="new" />
               </div>
               {saveError && <ErrorNotice message={saveError} />}
-              {(!catalog.dishes.length || !catalog.groups.length) && (
-                <ErrorNotice message="Справочники пока пусты. Ответственному за запуск нужно выполнить команду db:catalog." />
-              )}
               <Field htmlFor="dish" label="Блюдо">
-                <Select
+                <Input
                   id="dish"
-                  value={draft.dishId}
+                  value={draft.dishName}
                   required
-                  onChange={(event) => update("dishId", event.target.value)}
-                >
-                  <option value="">Выберите блюдо</option>
-                  {catalog.dishes.map((entry) => (
-                    <option key={entry.id} value={entry.id}>
-                      {entry.name}
-                    </option>
-                  ))}
-                </Select>
+                  maxLength={120}
+                  placeholder="Например, куриный суп с лапшой"
+                  onChange={(event) => update("dishName", event.target.value)}
+                />
               </Field>
               <div className="grid gap-6 sm:grid-cols-2">
                 <Field htmlFor="group" label="Класс / группа">
-                  <Select
+                  <Input
                     id="group"
-                    value={draft.groupId}
+                    value={draft.groupName}
                     required
-                    onChange={(event) => update("groupId", event.target.value)}
-                  >
-                    <option value="">Выберите класс или группу</option>
-                    {catalog.groups.map((entry) => (
-                      <option key={entry.id} value={entry.id}>
-                        {entry.name}
-                      </option>
-                    ))}
-                  </Select>
+                    maxLength={60}
+                    placeholder="Например, 5А или Группа 12"
+                    onChange={(event) =>
+                      update("groupName", event.target.value)
+                    }
+                  />
                 </Field>
                 <Field
                   htmlFor="quantity"
@@ -198,13 +172,7 @@ export default function NewOrderPage() {
                 <ButtonLink href="/cook" secondary>
                   Отмена
                 </ButtonLink>
-                <Button
-                  type="submit"
-                  busy={busy}
-                  disabled={
-                    stale || !catalog.dishes.length || !catalog.groups.length
-                  }
-                >
+                <Button type="submit" busy={busy} disabled={stale}>
                   Добавить блюдо
                 </Button>
               </div>
@@ -215,15 +183,15 @@ export default function NewOrderPage() {
               <p className="mb-4 text-[10px] font-medium tracking-[1px] text-warm-ink">
                 НОВЫЙ ЗАКАЗ
               </p>
-              <h2 className="text-2xl leading-tight font-semibold tracking-[-0.5px]">
-                {dish || "Выберите блюдо"}
+              <h2 className="text-2xl leading-tight font-semibold tracking-[-0.5px] break-words">
+                {draft.dishName.trim() || "Название блюда"}
               </h2>
               <p className="my-5 text-[32px] leading-none font-semibold tracking-[-1px]">
                 {portions(Math.max(0, Number(draft.quantity) || 0))}
               </p>
               <dl className="flex flex-col gap-4 border-t border-warm-ink/15 pt-5 text-xs">
                 {[
-                  ["Класс / группа", group || "—"],
+                  ["Класс / группа", draft.groupName.trim() || "—"],
                   [
                     "Дата",
                     draft.serviceDate
@@ -233,8 +201,10 @@ export default function NewOrderPage() {
                   ["Время подачи", draft.servingTime || "—"],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between gap-4">
-                    <dt className="text-warm-ink">{label}</dt>
-                    <dd className="font-medium">{value}</dd>
+                    <dt className="shrink-0 text-warm-ink">{label}</dt>
+                    <dd className="min-w-0 text-right font-medium break-words">
+                      {value}
+                    </dd>
                   </div>
                 ))}
               </dl>

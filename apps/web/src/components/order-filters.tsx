@@ -15,7 +15,7 @@ export function OrderFilters({
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { data: catalog } = useResource<Catalog>("/catalog", false);
+  const { data: catalog } = useResource<Catalog>("/catalog");
   function update(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (!value || value === "all") next.delete(key);

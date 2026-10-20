@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import {
   IsDateString,
   IsIn,
@@ -10,8 +10,9 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
 } from "class-validator";
-import type { OrderStatus } from "@stolovaya/contracts";
+import type { CreateOrder, OrderStatus } from "@stolovaya/contracts";
 
 export class OrderQuery {
   @ApiPropertyOptional({ enum: ["day", "week"], default: "day" })
@@ -56,9 +57,24 @@ export class OrderQuery {
   page?: number;
 }
 
-export class CreateOrderDto {
-  @ApiProperty() @IsString() @Matches(/^[a-zA-Z0-9_-]{1,60}$/) dishId!: string;
-  @ApiProperty() @IsString() @Matches(/^[a-zA-Z0-9_-]{1,60}$/) groupId!: string;
+const normalizeName = ({ value }: { value: unknown }): unknown =>
+  typeof value === "string"
+    ? value.normalize("NFKC").trim().replace(/\s+/gu, " ")
+    : value;
+
+export class CreateOrderDto implements CreateOrder {
+  @ApiProperty({ example: "Куриный суп с лапшой", maxLength: 120 })
+  @Transform(normalizeName)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  dishName!: string;
+  @ApiProperty({ example: "5А", maxLength: 60 })
+  @Transform(normalizeName)
+  @IsString()
+  @MinLength(1)
+  @MaxLength(60)
+  groupName!: string;
   @ApiProperty({ minimum: 1, maximum: 10000 })
   @IsInt()
   @Min(1)

@@ -131,8 +131,8 @@ try {
   await admin.locator("main a").filter({ hasText: "Выдано порций" }).waitFor();
   const cook = await session("cook");
   await cook.getByRole("link", { name: "Добавить блюдо", exact: true }).click();
-  await cook.getByLabel("Блюдо", { exact: true }).selectOption("soup");
-  await cook.getByLabel("Класс / группа", { exact: true }).selectOption("9a");
+  await cook.getByLabel("Блюдо", { exact: true }).fill("Куриный суп с лапшой");
+  await cook.getByLabel("Класс / группа", { exact: true }).fill("9А");
   await cook.getByLabel("Количество порций", { exact: true }).fill("3");
   await cook.route("**/api/v1/orders", async (route) => {
     if (route.request().method() === "POST") await route.abort("failed");
@@ -146,7 +146,8 @@ try {
     (await cook
       .getByLabel("Количество порций", { exact: true })
       .inputValue()) === "3" &&
-      (await cook.getByLabel("Блюдо", { exact: true }).inputValue()) === "soup",
+      (await cook.getByLabel("Блюдо", { exact: true }).inputValue()) ===
+        "Куриный суп с лапшой",
     "После ошибки сохранения форма не теряет данные",
   );
   await cook.unroute("**/api/v1/orders");
@@ -187,7 +188,7 @@ try {
     "Данные браузерного сценария подтверждены SQL-запросом",
   );
   await cook.goto("/cook/orders/new");
-  await cook.getByLabel("Блюдо", { exact: true }).selectOption("soup");
+  await cook.getByLabel("Блюдо", { exact: true }).fill("Куриный суп с лапшой");
   await cook.getByLabel("Количество порций", { exact: true }).fill("5");
   await admin.getByRole("link", { name: "Настройки", exact: true }).click();
   await admin

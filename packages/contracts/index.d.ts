@@ -105,8 +105,8 @@ export interface EntityAnalytics extends Analytics {
   orders: OrderPage;
 }
 export interface CreateOrder {
-  dishId: string;
-  groupId: string;
+  dishName: string;
+  groupName: string;
   quantity: number;
   serviceDate: string;
   servingTime: string;

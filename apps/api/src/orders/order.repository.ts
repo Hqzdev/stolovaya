@@ -13,6 +13,7 @@ import type {
   Scope,
   Totals,
 } from "@stolovaya/contracts";
+import { CatalogEntryRepository } from "../catalog/catalog-entry.repository";
 import { Database } from "../database/database";
 import { WorkspaceContext } from "../workspace/workspace.context";
 import { WorkspaceRepository } from "../workspace/workspace.repository";
@@ -74,6 +75,7 @@ export class OrderRepository {
     private readonly database: Database,
     private readonly workspace: WorkspaceContext,
     private readonly settings: WorkspaceRepository,
+    private readonly catalog: CatalogEntryRepository,
   ) {}
   async list(scope: Scope, query: OrderQuery): Promise<OrderPage> {
     const filter = new OrderFilter(scope, this.workspace.state.mode, query);
@@ -131,11 +133,13 @@ export class OrderRepository {
   async create(data: CreateOrder, actor: string): Promise<OrderDetail> {
     const id = await this.database.transaction(async (client) => {
       await this.settings.assertCurrent(client, this.workspace.state);
+      const dish = await this.catalog.resolve("dish", data.dishName, client);
+      const group = await this.catalog.resolve("group", data.groupName, client);
       const result = await client.query<{ id: number }>(
         "INSERT INTO orders (dish_id, group_id, quantity, service_date, serving_time, created_by, data_mode) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id",
         [
-          data.dishId,
-          data.groupId,
+          dish.id,
+          group.id,
           data.quantity,
           data.serviceDate,
           data.servingTime,

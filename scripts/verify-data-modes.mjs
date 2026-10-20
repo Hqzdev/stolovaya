@@ -90,6 +90,9 @@ try {
     await client.query(
       await readFile("apps/api/migrations/001_initial.sql", "utf8"),
     );
+    await client.query(
+      await readFile("apps/api/migrations/003_catalog_names.sql", "utf8"),
+    );
     const environment = new Environment();
     await seedCatalog(client);
     await client.query(
@@ -193,8 +196,8 @@ try {
   await cook.sync();
   const catalog = (await cook.request("/catalog")).body;
   const payload = {
-    dishId: catalog.dishes[0].id,
-    groupId: catalog.groups[0].id,
+    dishName: catalog.dishes[0].name,
+    groupName: catalog.groups[0].name,
     quantity: 5,
     serviceDate: cook.workspace.today,
     servingTime: "12:10",

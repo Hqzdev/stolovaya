@@ -1,17 +1,21 @@
 import type { PoolClient } from "pg";
 import type { OrderStatus } from "@stolovaya/contracts";
+import { CatalogEntryRepository } from "../catalog/catalog-entry.repository";
 import { Environment } from "../config/environment";
 
-export async function seedCatalog(client: PoolClient): Promise<void> {
+export async function seedCatalog(
+  client: PoolClient,
+): Promise<{ dishes: Map<string, string>; groups: Map<string, string> }> {
+  const repository = new CatalogEntryRepository();
+  const dishes = new Map<string, string>();
+  const groups = new Map<string, string>();
   for (const [id, name] of [
     ["soup", "Куриный суп с лапшой"],
     ["cutlet", "Котлета с гречкой"],
     ["casserole", "Творожная запеканка"],
   ]) {
-    await client.query(
-      "INSERT INTO dishes (id, name) VALUES ($1,$2) ON CONFLICT (id) DO NOTHING",
-      [id, name],
-    );
+    const entry = await repository.resolve("dish", name, client, id);
+    dishes.set(id, entry.id);
   }
   for (const [id, name] of [
     ["9a", "9А"],
@@ -19,11 +23,10 @@ export async function seedCatalog(client: PoolClient): Promise<void> {
     ["8v", "8В"],
     ["7a", "7А"],
   ]) {
-    await client.query(
-      "INSERT INTO school_groups (id, name) VALUES ($1,$2) ON CONFLICT (id) DO NOTHING",
-      [id, name],
-    );
+    const entry = await repository.resolve("group", name, client, id);
+    groups.set(id, entry.id);
   }
+  return { dishes, groups };
 }
 
 type SeedOrder = [string, string, number, number, string, OrderStatus, string?];
@@ -48,7 +51,7 @@ export async function seedDemo(
     new Date(`${anchor}T12:00:00Z`).toISOString().slice(0, 10) !== anchor
   )
     throw new Error("DEMO_DATE должна быть корректной датой YYYY-MM-DD.");
-  await seedCatalog(client);
+  const catalog = await seedCatalog(client);
   const actor = environment.accounts.find(
     (account) => account.role === "cook",
   )!.login;
@@ -156,8 +159,8 @@ export async function seedDemo(
       `INSERT INTO orders (dish_id,group_id,quantity,service_date,serving_time,status,created_by,created_at,cooking_at,ready_at,data_mode)
       VALUES ($1,$2,$3,$4,'12:10',$5,$6,$7::timestamp AT TIME ZONE $10,$8::timestamp AT TIME ZONE $10,$9::timestamp AT TIME ZONE $10,'demo') RETURNING id`,
       [
-        dish,
-        group,
+        catalog.dishes.get(dish)!,
+        catalog.groups.get(group)!,
         quantity,
         date,
         status,

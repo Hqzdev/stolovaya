@@ -136,8 +136,8 @@ try {
     );
   }
   const payload = {
-    dishId: catalog.dishes[0].id,
-    groupId: catalog.groups[0].id,
+    dishName: catalog.dishes[0].name,
+    groupName: catalog.groups[0].name,
     quantity: 3,
     serviceDate: date,
     servingTime: "12:10",
@@ -200,17 +200,23 @@ try {
     "Поиск по номеру заказа",
   );
   const entity = (
-    await request(`/analytics/dishes/${payload.dishId}?${scope}`, admin)
+    await request(
+      `/analytics/dishes/${created.body.order.dishId}?${scope}`,
+      admin,
+    )
   ).body;
   check(
-    entity.entity.id === payload.dishId &&
+    entity.entity.id === created.body.order.dishId &&
       entity.orders.items.some((order) => order.id === createdId),
     "Подробности блюда связаны с заказами",
   );
   const group = (
-    await request(`/analytics/groups/${payload.groupId}?${scope}`, admin)
+    await request(
+      `/analytics/groups/${created.body.order.groupId}?${scope}`,
+      admin,
+    )
   ).body;
-  check(group.entity.id === payload.groupId, "Подробности класса");
+  check(group.entity.id === created.body.order.groupId, "Подробности класса");
   const empty = (
     await request(`/orders?${scope}&q=impossible-query-xyz`, admin)
   ).body;
